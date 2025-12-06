@@ -1,0 +1,8 @@
+{
+  "name": "Vistara",
+  "description": "Platform Bisnis Cerdas untuk UMKM. Analisis mendalam, desain elegan, dan solusi nyata.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
