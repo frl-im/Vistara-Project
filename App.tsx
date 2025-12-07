@@ -2,138 +2,216 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AgentType, AgentAction } from './types';
 import { sendMessageToOrchestrator } from './services/geminiService';
 import { ChatBubble, Input, Button } from './components/Components';
-import { Hexagon, Send, Sparkles, MoreHorizontal, Loader2 } from 'lucide-react';
+import { 
+  Hexagon, Send, Sparkles, LayoutDashboard, 
+  Map as MapIcon, HeartPulse, Users, Palette, 
+  Activity, Menu, X, Loader2
+} from 'lucide-react';
+
+// Import Feature Components
+import { BrandAI } from './features/BrandAI';
+import { LocationAI } from './features/LocationAI';
+import { SentimentAI } from './features/SentimentAI';
+import { CollabAI } from './features/CollabAI';
+import { SimAI } from './features/SimAI';
+
+// --- MAIN APP COMPONENT ---
 
 const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'chat' | 'brand' | 'location' | 'sentiment' | 'collab' | 'sim'>('chat');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Chat State
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<AgentAction[]>([
       {
           agent: AgentType.STRATEGIST,
-          content: "Selamat pagi, Pak. Saya siap membantu operasional hari ini. Ada keluhan atau target khusus yang mau kita bahas?",
-          title: "Sistem Siap"
+          content: "Vistara Prime online. Saya tidak di sini untuk memanjakan ego Anda. Tunjukkan angkanya, atau ceritakan masalah terbesarnya. Waktu adalah uang.",
+          title: "EXECUTIVE SYSTEM"
       }
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (activeTab === 'chat') {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, activeTab]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg: AgentAction = {
-        agent: AgentType.USER,
-        content: input
-    };
-
+    const userMsg: AgentAction = { agent: AgentType.USER, content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
 
     try {
         const agentActions = await sendMessageToOrchestrator(userMsg.content);
-        
-        // Simulate streaming delay between agents for realism
         for (const action of agentActions) {
-            await new Promise(resolve => setTimeout(resolve, 800)); // Natural delay
+            await new Promise(resolve => setTimeout(resolve, 600)); 
             setMessages(prev => [...prev, action]);
         }
     } catch (e) {
-        setMessages(prev => [...prev, { agent: AgentType.STRATEGIST, content: "Maaf, ada gangguan koneksi." }]);
+        setMessages(prev => [...prev, { agent: AgentType.STRATEGIST, content: "Koneksi terputus. Refresh sistem." }]);
     } finally {
         setLoading(false);
     }
   };
 
+  const menuItems = [
+    { id: 'chat', label: 'Command Center', icon: LayoutDashboard },
+    { id: 'sim', label: 'Business Simulator', icon: Activity },
+    { id: 'sentiment', label: 'Emosi Meter', icon: HeartPulse },
+    { id: 'location', label: 'Geo Intelligence', icon: MapIcon },
+    { id: 'brand', label: 'Brand Atelier', icon: Palette },
+    { id: 'collab', label: 'Synergy Link', icon: Users },
+  ];
+
   return (
-    <div className="h-screen bg-nexus-base flex flex-col font-sans overflow-hidden">
-      {/* Header */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 py-3 px-4 md:px-6 flex justify-between items-center shadow-sm z-10">
-        <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-gold rounded-xl flex items-center justify-center shadow-lg shadow-nexus-accent/20">
-                <Hexagon size={24} className="text-white" />
+    <div className="h-screen bg-nexus-base flex font-sans overflow-hidden">
+      
+      {/* SIDEBAR NAVIGATION (Desktop) */}
+      <aside className="hidden md:flex w-64 bg-nexus-onyx text-white flex-col shadow-2xl z-20">
+        <div className="p-6 border-b border-gray-800 flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-gold rounded-lg flex items-center justify-center">
+                <Hexagon size={18} className="text-white fill-white/20" />
             </div>
-            <div>
-                <h1 className="font-serif font-bold text-nexus-text text-lg leading-none">Vistara Core</h1>
-                <div className="flex items-center gap-1.5 mt-1">
-                    <span className="flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    <span className="text-[10px] text-nexus-muted font-bold tracking-widest uppercase">3 Agents Active</span>
+            <span className="font-serif font-bold text-xl tracking-wide">VISTARA</span>
+        </div>
+        
+        <nav className="flex-1 py-6 px-3 space-y-1">
+            {menuItems.map((item) => (
+                <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                        activeTab === item.id 
+                        ? 'bg-nexus-accent text-white shadow-lg shadow-nexus-accent/20' 
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    }`}
+                >
+                    <item.icon size={20} className={activeTab === item.id ? 'text-white' : 'text-gray-500 group-hover:text-white'} />
+                    <span className="font-medium text-sm">{item.label}</span>
+                </button>
+            ))}
+        </nav>
+
+        <div className="p-6 border-t border-gray-800">
+            <div className="bg-gray-800/50 rounded-lg p-3">
+                <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">System Status</p>
+                <div className="flex items-center gap-2 text-green-400 text-xs font-mono">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    ALL SYSTEMS ONLINE
                 </div>
             </div>
         </div>
-        <button className="p-2 text-gray-400 hover:text-nexus-text hover:bg-gray-100 rounded-lg transition-colors">
-            <MoreHorizontal size={24} />
-        </button>
-      </header>
+      </aside>
 
-      {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
-         <div className="max-w-3xl mx-auto pb-4">
-             {/* Date Divider */}
-             <div className="flex justify-center mb-8">
-                 <span className="bg-gray-100 text-gray-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                    Hari Ini, {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long'})}
-                 </span>
-             </div>
+      {/* MOBILE HEADER */}
+      <div className="md:hidden absolute top-0 left-0 right-0 h-16 bg-nexus-onyx flex items-center justify-between px-4 z-30 shadow-md">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-gold rounded-lg flex items-center justify-center">
+                <Hexagon size={18} className="text-white" />
+            </div>
+            <span className="font-serif font-bold text-white text-lg">VISTARA</span>
+          </div>
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white">
+              {mobileMenuOpen ? <X /> : <Menu />}
+          </button>
+      </div>
 
-             {/* Messages */}
-             {messages.map((msg, idx) => (
-                 <ChatBubble key={idx} message={msg} />
-             ))}
+      {/* MOBILE MENU OVERLAY */}
+      {mobileMenuOpen && (
+          <div className="absolute inset-0 bg-nexus-onyx z-20 pt-20 px-4 md:hidden">
+             <nav className="space-y-2">
+                {menuItems.map((item) => (
+                    <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id as any); setMobileMenuOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl text-left ${
+                            activeTab === item.id ? 'bg-nexus-accent text-white' : 'text-gray-400'
+                        }`}
+                    >
+                        <item.icon size={20} />
+                        <span className="font-medium">{item.label}</span>
+                    </button>
+                ))}
+             </nav>
+          </div>
+      )}
 
-             {/* Loading State - Thinking Indicator */}
-             {loading && (
-                 <div className="flex gap-4 mb-6 animate-pulse">
-                     <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                         <Sparkles size={16} className="text-gray-400" />
-                     </div>
-                     <div className="flex items-center gap-1 text-xs text-gray-400 font-medium pt-2">
-                         Vistara sedang berpikir<span className="animate-bounce">.</span><span className="animate-bounce delay-75">.</span><span className="animate-bounce delay-150">.</span>
-                     </div>
-                 </div>
-             )}
-             
-             <div ref={messagesEndRef} />
-         </div>
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative md:static pt-16 md:pt-0">
+        
+        {/* TOP BAR (Context) */}
+        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 md:px-8 shadow-sm flex-shrink-0">
+            <h2 className="font-serif font-bold text-nexus-text text-xl">
+                {menuItems.find(i => i.id === activeTab)?.label}
+            </h2>
+            <div className="hidden md:flex items-center gap-2 text-xs font-medium text-nexus-muted bg-gray-100 px-3 py-1.5 rounded-full">
+                <span>Powered by Gemini 2.5 Flash</span>
+            </div>
+        </header>
+
+        {/* DYNAMIC CONTENT */}
+        <div className="flex-1 overflow-y-auto bg-gray-50/50 p-4 md:p-8 relative">
+            
+            {/* 1. CHAT ORCHESTRATOR */}
+            {activeTab === 'chat' && (
+                <div className="max-w-4xl mx-auto h-full flex flex-col">
+                    <div className="flex-1 pr-2">
+                        {messages.map((msg, idx) => (
+                            <ChatBubble key={idx} message={msg} />
+                        ))}
+                        {loading && (
+                            <div className="flex gap-4 mb-6 animate-pulse">
+                                <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
+                                    <Sparkles size={16} className="text-gray-400" />
+                                </div>
+                                <div className="text-xs text-gray-400 font-medium pt-2">
+                                    Analyzing market data...
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+                    
+                    <div className="pt-4 sticky bottom-0 bg-gradient-to-t from-nexus-base via-nexus-base to-transparent pb-2">
+                         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2 flex gap-2 items-center relative">
+                            <Input 
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                                placeholder="Jelaskan situasi bisnis Anda secara spesifik..." 
+                                className="border-none shadow-none focus:ring-0 bg-transparent py-3 px-4 text-sm"
+                            />
+                            <Button 
+                                variant="icon" 
+                                onClick={handleSend} 
+                                disabled={loading || !input.trim()}
+                                className="h-10 w-10 p-0 flex items-center justify-center"
+                            >
+                                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Send size={16} />}
+                            </Button>
+                         </div>
+                         <p className="text-center text-[10px] text-gray-400 mt-2">
+                            AI dapat membuat kesalahan. Selalu verifikasi data penting.
+                         </p>
+                    </div>
+                </div>
+            )}
+
+            {/* 2. FEATURE COMPONENTS */}
+            {activeTab === 'sim' && <div className="max-w-5xl mx-auto"><SimAI /></div>}
+            {activeTab === 'sentiment' && <div className="max-w-5xl mx-auto"><SentimentAI /></div>}
+            {activeTab === 'location' && <div className="max-w-5xl mx-auto"><LocationAI /></div>}
+            {activeTab === 'brand' && <div className="max-w-5xl mx-auto"><BrandAI /></div>}
+            {activeTab === 'collab' && <div className="max-w-5xl mx-auto"><CollabAI /></div>}
+
+        </div>
       </main>
-
-      {/* Input Area */}
-      <footer className="bg-white border-t border-gray-200 p-4 md:p-6">
-          <div className="max-w-3xl mx-auto flex gap-3 relative">
-              <div className="flex-1 relative">
-                  <Input 
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Ketik masalah bisnis Anda..." 
-                    className="pr-12 py-4 shadow-sm border-gray-200 bg-gray-50 focus:bg-white transition-colors"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                      {/* Decoration icons for input */}
-                  </div>
-              </div>
-              <Button 
-                variant="icon" 
-                onClick={handleSend} 
-                disabled={loading || !input.trim()}
-                className="h-[58px] w-[58px] flex items-center justify-center flex-shrink-0"
-              >
-                  {loading ? <Loader2 className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
-              </Button>
-          </div>
-          <div className="max-w-3xl mx-auto mt-2 text-center">
-             <p className="text-[10px] text-gray-400">Vistara AI Orchestrator • Powered by Gemini 2.5 Flash</p>
-          </div>
-      </footer>
     </div>
   );
 };

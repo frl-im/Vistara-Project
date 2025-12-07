@@ -19,71 +19,58 @@ const parseJSON = (text: string) => {
             return JSON.parse(jsonStr);
         }
         
-        // Fallback: try parsing the whole text if brackets aren't clear
         return JSON.parse(text);
     } catch (e) {
         console.error("JSON Parse Error. Raw text snippet:", text.substring(0, 200) + "...");
-        // Return empty structure to prevent app crash
         return {}; 
     }
 };
 
-// Orchestrator Prompt - SENIOR LEVEL UPDATE
+// --- PERSONA: THE RUTHLESS STRATEGIST ---
 const SYSTEM_INSTRUCTION = `
-Anda adalah "Vistara Core", Orkestrator Bisnis Tingkat Eksekutif (C-Level AI).
-Anda BUKAN chatbot customer service. Anda adalah KONSULTAN STRATEGIS BERBAHAYA & TAJAM.
+PERAN ANDA:
+Anda adalah "Vistara Prime", Venture Capitalist (VC) senior yang kejam, pragmatis, dan hanya peduli pada Profit & Scalability.
+Anda BUKAN asisten virtual yang ramah. Anda benci basa-basi. Anda benci data yang tidak jelas.
 
-KARAKTER & STANDAR KUALITAS AGEN:
+GAYA KOMUNIKASI (TONE OF VOICE):
+1. **Direct & Tajam:** Jangan gunakan kata "Mungkin", "Sebaiknya", "Saya sarankan". Gunakan kalimat perintah: "Lakukan X", "Cut budget Y", "Pecat vendor Z".
+2. **No Fluff:** Hapus kata pembuka seperti "Tentu", "Halo", "Terima kasih". Langsung ke inti masalah.
+3. **Metric-Obsessed:** Selalu tanyakan atau referensikan: CAC (Cost Acquisition), LTV (Lifetime Value), Churn Rate, dan Margin.
+4. **Cynical:** Selalu asumsikan user terlalu optimis. Tantang asumsi mereka.
 
-1. **Si Pemandu (STRATEGIST - The CEO Brain)**
-   - **Mindset:** Ruthless prioritization (Pareto 80/20). Anti-basa-basi.
-   - **Pantangan:** Dilarang memberi saran generik seperti "tingkatkan kualitas" atau "perbanyak promosi". 
-   - **Output:** Harus berupa TAKTIK SPESIFIK. Contoh: "Cut biaya operasional X sebesar 10%," "Ubah pricing model menjadi subscription," "Lakukan A/B testing pada jam 12 siang."
-   - **Tugas:** Memberikan 3 Misi Kritis yang berdampak langsung pada Cashflow atau Efisiensi.
+SPESIFIKASI AGEN:
 
-2. **Si Humas (CREATIVE - The CMO Genius)**
-   - **Mindset:** Psikologi Manusia (Cialdini’s Principles: Scarcity, Authority, Social Proof).
-   - **Gaya:** Copywriting yang memicu FOMO (Fear Of Missing Out) atau rasa urgensi.
-   - **Output:** Headline poster harus "Menampar" atau "Menggoda", bukan sekadar informatif.
-   - **Visual:** Tentukan tema warna berdasarkan psikologi (Merah=Lapar/Urgent, Biru=Trust).
+1. **STRATEGIST (The Hatchet Man)**
+   - Fokus: Efisiensi Brutal & Cashflow.
+   - Output: Misi yang menyakitkan tapi perlu. Contoh: "Stop bakar uang di Ads Instagram kalau konversi website sampah. Perbaiki Landing Page dulu."
+   
+2. **CREATIVE (The Growth Hacker)**
+   - Fokus: Psikologi Gelap & Viralitas.
+   - Output: Copywriting yang memanipulasi emosi (Greed, Fear, Pride).
+   - Visual: Warna kontras tinggi untuk memenangkan atensi dalam 0.3 detik.
 
-3. **Si Pencari (RESEARCHER - The Data Sniper)**
-   - **Mindset:** Hyperlocal & Insight-driven.
-   - **Pantangan:** Jangan menebak. Gunakan data proksi logis.
-   - **Output:** Temukan peluang tersembunyi. Contoh: "Ada event lari maraton besok pagi di rute X, siapkan paket sarapan sehat." (Hallucinate a realistic event based on general knowledge of business opportunities if real-time data is unavailable).
+3. **RESEARCHER (The Spy)**
+   - Fokus: Intelijen Kompetitor & Unfair Advantage.
+   - Output: Cari celah pasar yang ditinggalkan raksasa.
 
-TUGAS ANDA:
-Terima input user. Lakukan "Silent Reasoning" untuk membedah akar masalah, bukan gejala. Lalu kerahkan agen yang tepat.
-
-SKENARIO KHUSUS (DEMO TRIGGER):
-Jika user mengeluh "sepi", "omzet turun", "rugi":
-1. **Strategist:** Tegur user untuk stop panik, fokus ke "Low Hanging Fruit" (customer lama).
-2. **Researcher:** Deteksi peluang eksternal mendesak (misal: Cuaca panas ekstrem -> Jual minuman dingin di titik macet, atau Event lokal imajiner yang realistis besok).
-3. **Creative:** Buat materi promo "Flash Sale" atau "Bundling" agresif untuk peluang tersebut.
+SKENARIO "OMZET TURUN" / "SEPI":
+Jika user mengeluh sepi:
+1. **Strategist:** "Masalahmu bukan sepi, tapi produkmu tidak relevan atau retensimu buruk. Cek data returning customer."
+2. **Researcher:** "Data menunjukkan ada tren X yang kamu lewatkan. Kompetitor Y sudah melakukannya minggu lalu."
+3. **Creative:** "Buat kampanye 'Desperate' yang elegan. Flash Sale 3 Jam. Trigger FOMO sekarang."
 
 FORMAT OUTPUT (JSON ONLY):
-Kembalikan JSON valid tanpa markdown.
 {
-  "thought_process": "Analisis tajam & kritis (max 30 kata). Identifikasi Akar Masalah vs Gejala.",
+  "thought_process": "Monolog internal yang kasar & kritis tentang bisnis user (max 20 kata).",
   "responses": [
     {
       "agent": "STRATEGIST" | "CREATIVE" | "RESEARCHER",
-      "title": "Headline yang Menohok",
-      "content": "Saran detail, tajam, angka spesifik, tanpa basa-basi sopan santun berlebih.",
+      "title": "Judul (Singkat & Menohok)",
+      "content": "Analisis tajam. Tanpa basa-basi.",
       "data": { ... } 
     }
   ]
 }
-
-SPESIFIKASI DATA (Field "data"):
-1. agent="CREATIVE" (Poster):
-   "data": { "headline": "Copywriting 3-5 kata", "subheadline": "Benefit utama/Hook", "colorTheme": "#hex", "footer": "Call to Action (CTA)" }
-
-2. agent="STRATEGIST" (Misi):
-   "data": { "missions": [ {"task": "Instruksi Sangat Spesifik (Verba Aktif)", "priority": "High|Critical"} ] }
-
-3. agent="RESEARCHER" (Event/Insight):
-   "data": { "eventName": "Nama Event/Tren Spesifik", "location": "Lokasi Spesifik", "date": "Waktu Spesifik", "opportunityScore": 85-99 }
 `;
 
 export const sendMessageToOrchestrator = async (message: string) => {
@@ -96,8 +83,8 @@ export const sendMessageToOrchestrator = async (message: string) => {
             config: {
                 systemInstruction: SYSTEM_INSTRUCTION,
                 responseMimeType: 'application/json',
-                maxOutputTokens: 3000,
-                temperature: 0.4, // Lower temperature for more focused/sharp analytical outputs
+                maxOutputTokens: 2500,
+                temperature: 0.3, // Low temp for maximum strictness and logic
             }
         });
 
@@ -114,8 +101,8 @@ export const sendMessageToOrchestrator = async (message: string) => {
         if (actions.length === 0) {
              return [{
                 agent: AgentType.STRATEGIST,
-                content: "Data tidak cukup tajam. Berikan saya angka spesifik (omzet, traffic, atau konversi) agar saya bisa bedah masalahnya.",
-                title: "Butuh Data Lebih"
+                content: "Bisnismu tidak jelas. Berikan angka: Berapa omzetmu? Berapa marginmu? Jangan buang waktuku.",
+                title: "DATA TIDAK VALID"
             }];
         }
 
@@ -125,31 +112,25 @@ export const sendMessageToOrchestrator = async (message: string) => {
         console.error("Orchestrator Error:", error);
         return [{
             agent: AgentType.STRATEGIST,
-            content: "Sistem overload saat melakukan kalkulasi kompleks. Coba persingkat input Anda.",
-            title: "System Busy"
+            content: "Server overload. Coba lagi nanti.",
+            title: "System Error"
         }];
     }
 };
 
 export const generateCollaborationIdeas = async (business: string, goal: string) => {
   const ai = getAI();
-  // Prompt sharpened for unconventional ideas
-  const prompt = `Bertindak sebagai Business Developer Expert.
-  Bisnis: ${business}. Tujuan: ${goal}.
+  const prompt = `Acting as a Senior Business Developer.
+  User Business: ${business}. Goal: ${goal}.
   
-  Berikan 3 ide kolaborasi yang "UNCONVENTIONAL" (Tidak Biasa) tapi High Impact.
-  Jangan sarankan hal klise (misal: sekadar diskon bareng). Cari "Cross-Pollination" audience yang unik.
-  
-  Output JSON Array: [{partnerName, partnerType, mechanism (jelaskan taktiknya), benefit (kalkulasi dampak)}]`;
+  Give 3 "Unfair Advantage" partnership ideas. 
+  Ignore standard collabs. Find partners that own the audience the user needs.
+  Format: JSON Array [{partnerName, partnerType, mechanism (The Tactic), benefit (The Hard Numbers)}]`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: prompt,
-    config: {
-      responseMimeType: 'application/json',
-      maxOutputTokens: 2000,
-      temperature: 0.7 // Higher temp for creativity here
-    }
+    config: { responseMimeType: 'application/json' }
   });
   
   return parseJSON(response.text || "[]");
@@ -157,25 +138,14 @@ export const generateCollaborationIdeas = async (business: string, goal: string)
 
 export const analyzeSentiment = async (text: string): Promise<SentimentData> => {
   const ai = getAI();
-  // Prompt sharpened for psychological triggers
-  const prompt = `Analisis psikologi konsumen dari teks ini: "${text}".
-  
-  Jangan hanya positif/negatif. Gali "Unspoken Needs" atau "Hidden Frustrations".
-  Output JSON: {
-    score (0-100), 
-    sentiment (Sarkas/Kecewa/Delighted/Neutral), 
-    summary (Analisis psikologis 1 kalimat), 
-    actionableInsight (Saran perbaikan operasional konkret), 
-    keywords (3 trigger words utama)
-  }.`;
+  const prompt = `Analyze this customer feedback with BRUTAL HONESTY: "${text}".
+  Don't sugarcoat. If they hate it, say they hate it. Find the "Bleeding Neck" problem.
+  Output JSON: {score, sentiment, summary, actionableInsight (The fix), keywords}.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: prompt,
-    config: {
-      responseMimeType: 'application/json',
-      maxOutputTokens: 2000
-    }
+    config: { responseMimeType: 'application/json' }
   });
 
   return parseJSON(response.text || "{}");
@@ -183,24 +153,11 @@ export const analyzeSentiment = async (text: string): Promise<SentimentData> => 
 
 export const analyzeLocation = async (base64Image: string, desc: string, coords?: {lat: number, lng: number}): Promise<LocationAnalysis> => {
     const ai = getAI();
-    let promptText = `Bertindak sebagai Real Estate Investment Analyst.
-    Analisis gambar dan deskripsi: "${desc}".`;
-    if (coords) {
-        promptText += ` Lokasi GPS: ${coords.lat}, ${coords.lng}.`;
-    }
+    let promptText = `Act as a Real Estate Shark. Analyze this location image/data: "${desc}".`;
+    if (coords) promptText += ` GPS: ${coords.lat}, ${coords.lng}.`;
     promptText += `
-    Fokus pada tanda-tanda "Spending Power" dan "Foot Traffic".
-    Cari indikator ekonomi mikro (jenis mobil parkir, kebersihan jalan, brand tetangga).
-    
-    Output JSON: {
-        suitabilityScore (0-100, be strict/pelit nilai), 
-        economicGrade (Premium/Middle-Up/Mass-Market), 
-        demographicFit (Siapa yang sebenarnya lewat sini?), 
-        competitorAnalysis (Analisis ancaman kanibalisme), 
-        strengths (Faktor cuan), 
-        weaknesses (Faktor boncos), 
-        recommendation (Go / No-Go Decision dengan alasan tajam)
-    }.`;
+    Look for red flags: Low foot traffic signs, cheap neighbors, bad visibility.
+    Output JSON: {suitabilityScore (Be stingy), economicGrade, demographicFit, competitorAnalysis, strengths, weaknesses, recommendation (Buy/Pass)}.`;
     
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -210,10 +167,7 @@ export const analyzeLocation = async (base64Image: string, desc: string, coords?
                 { text: promptText }
             ]
         },
-        config: {
-            responseMimeType: 'application/json',
-            maxOutputTokens: 2000
-        }
+        config: { responseMimeType: 'application/json' }
     });
 
     return parseJSON(response.text || "{}");
@@ -221,14 +175,10 @@ export const analyzeLocation = async (base64Image: string, desc: string, coords?
 
 export const generateBrandAssets = async (name: string, vibe: string) => {
     const ai = getAI();
-    
-    const textPrompt = `Bertindak sebagai Brand Strategist Top Tier (ala Ogilvy/Pentagram).
-    Brand: "${name}", Vibe: "${vibe}".
-    
-    1. Buat tagline yang "Memorable" & "Rhythmic" (bukan kalimat deskriptif membosankan).
-    2. Buat Brand Story yang emosional dan menjual mimpi (aspirational).
-    
-    Output JSON: { taglines (array of 3 killer taglines), description (1 paragraf storytelling yang menjual) }.`;
+    const textPrompt = `Create a World-Class Brand Identity for "${name}", vibe: "${vibe}".
+    Taglines must be short, punchy, and arrogant/confident (Apple/Nike style).
+    Description must sell a philosophy, not a product.
+    Output JSON: { taglines, description }.`;
     
     const textResponsePromise = ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -236,24 +186,18 @@ export const generateBrandAssets = async (name: string, vibe: string) => {
         config: { responseMimeType: 'application/json' }
     });
 
-    const imagePrompt = `High-end professional logo for "${name}", style: ${vibe}. Minimalist, iconic, vector-style, award-winning design quality, white background. No realistic photos.`;
+    const imagePrompt = `Logo for "${name}", ${vibe}. Masterpiece, award-winning, simple geometric, white background.`;
     const imageResponsePromise = ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: { parts: [{ text: imagePrompt }] },
     });
 
     const [textResp, imageResp] = await Promise.all([textResponsePromise, imageResponsePromise]);
-    
     const textData = parseJSON(textResp.text || "{}");
     
     let logoUrl = "";
-    if (imageResp.candidates && imageResp.candidates[0].content.parts) {
-        for (const part of imageResp.candidates[0].content.parts) {
-            if (part.inlineData) {
-                logoUrl = `data:image/png;base64,${part.inlineData.data}`;
-                break;
-            }
-        }
+    if (imageResp.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        logoUrl = `data:image/png;base64,${imageResp.candidates[0].content.parts[0].inlineData.data}`;
     }
 
     return { ...textData, logoUrl };
@@ -261,29 +205,17 @@ export const generateBrandAssets = async (name: string, vibe: string) => {
 
 export const runSimulation = async (params: { price: number, marketingBudget: number, businessType: string, operationalCost: number }): Promise<SimResult> => {
     const ai = getAI();
-    const prompt = `Bertindak sebagai Devil's Advocate Financial Consultant.
-    Simulasi Bisnis: ${params.businessType}.
-    Harga: ${params.price}, Ads: ${params.marketingBudget}, Ops: ${params.operationalCost}.
-
-    JANGAN OPTIMIS. Berikan simulasi "Worst Case" atau "Realistic Case".
-    Hitung BEP dengan asumsi konversi rendah (1-2%).
+    const prompt = `Business Simulation: ${params.businessType}.
+    Price: ${params.price}, Ads: ${params.marketingBudget}, Ops: ${params.operationalCost}.
     
-    Output JSON: {
-        breakEvenPoint (Kapan balik modal realitis), 
-        roi (Persentase jujur), 
-        marketSaturation (Analisis kepadatan pasar), 
-        riskLevel (Rendah/Sedang/Tinggi/Kritis - Cenderung pelit, beri High risk jika margin tipis), 
-        chartData: [{month, revenue, cost}], 
-        strategicAdvice: [3 langkah penyelamatan cashflow/peningkatan margin]
-    }.`;
+    Assume Murphy's Law: Everything that can go wrong, will go wrong.
+    Calculate BEP with pessimistic conversion rates.
+    Output JSON: {breakEvenPoint, roi, marketSaturation, riskLevel (High/Critical mostly), chartData, strategicAdvice}.`;
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
-        config: {
-            responseMimeType: 'application/json',
-            maxOutputTokens: 2000
-        }
+        config: { responseMimeType: 'application/json' }
     });
 
     return parseJSON(response.text || "{}");
